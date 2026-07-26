@@ -38,8 +38,6 @@ A lightweight, text-based DeFi risk assessment website inspired by L2Beat. Proto
 │       └── [category]/
 │           ├── index.astro     # Category listing page
 │           └── [slug].astro    # Protocol detail page
-├── scripts/
-│   └── update-tvl.mjs          # DeFiLlama TVL fetcher
 ├── public/                     # Favicons, logos, robots.txt
 └── package.json
 ```
