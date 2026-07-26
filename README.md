@@ -68,30 +68,6 @@ npm run preview
 The dev server will start at `http://localhost:4321`
 
 
-### Protocol slug map
-
-The mapping of DeFiLlama slugs to local files lives entirely in `scripts/update-tvl.mjs`. To add a new protocol or fix a slug:
-
-1. Find the correct slug at `https://defillama.com/protocol/<slug>`
-2. Add an entry to `PROTOCOL_MAP` in the script:
-   ```js
-   'your-slug': 'src/content/category/protocol.md',
-   ```
-
-### Protocols currently tracked
-
-| Category | Protocols |
-|---|---|
-| DEXes | Uniswap V2/V3/V4, Balancer V2, Curve |
-| Lending | Aave V2/V3, Compound V2/V3, MakerDAO/Sky, Morpho, Spark |
-| Liquid Staking | Lido, Rocket Pool, EtherFi, EigenLayer |
-| Derivatives | dYdX V4, GMX V2 |
-| Yield | Convex, Ethena, Fluid (Instadapp), Pendle, Yearn |
-
-> Uniswap V1, Aave V1, and Compound V1 are intentionally excluded — negligible TVL on DeFiLlama.
-
----
-
 ## Adding a New Protocol
 
 1. Create a new markdown file in the appropriate category directory:
