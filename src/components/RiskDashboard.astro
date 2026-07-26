@@ -1,0 +1,103 @@
+---
+interface Props {
+  risks: {
+    upgradeability: string;
+    adminControl: string;
+    fundAccess: string;
+    audits: string;
+    externalDependencies: string;
+    trackRecord: string;
+  };
+}
+const { risks } = Astro.props;
+
+const riskLabels: Record<string, string> = {
+  upgradeability: 'Upgradeability',
+  adminControl: 'Admin Control',
+  fundAccess: 'Fund Access',
+  audits: 'Audits',
+  externalDependencies: 'External Dependencies',
+  trackRecord: 'Track Record',
+};
+
+const ratingMap: Record<string, Record<string, '✓' | '⚠' | '✗'>> = {
+  upgradeability: { 'immutable': '✓', 'timelock-7d+': '✓', 'timelock-48h+': '⚠', 'instant': '✗' },
+  adminControl: { 'none': '✓', 'governance': '✓', 'multisig-diverse': '⚠', 'multisig-weak': '⚠', 'eoa': '✗' },
+  fundAccess: { 'impossible': '✓', 'restricted': '⚠', 'possible': '✗' },
+  audits: { 'extensive': '✓', 'multiple': '✓', 'single': '⚠', 'none': '✗' },
+  externalDependencies: { 'none': '✓', 'decentralized': '✓', 'mixed': '⚠', 'centralized': '✗' },
+};
+
+const prettyValues: Record<string, string> = {
+  'immutable': 'Immutable',
+  'timelock-7d+': '7+ Day Timelock',
+  'timelock-48h+': '48h+ Timelock',
+  'instant': 'Instant Upgrade',
+  'none': 'None',
+  'governance': 'DAO Governance',
+  'multisig-diverse': 'Diverse Multisig',
+  'multisig-weak': 'Weak Multisig',
+  'eoa': 'Single EOA',
+  'impossible': 'Impossible',
+  'restricted': 'Restricted',
+  'possible': 'Possible',
+  'extensive': 'Extensive',
+  'multiple': 'Multiple',
+  'single': 'Single Audit',
+  'none': 'None',
+  'decentralized': 'Decentralized',
+  'mixed': 'Mixed',
+  'centralized': 'Centralized',
+};
+
+const icons: Record<string, string> = {
+  upgradeability: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+  adminControl: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
+  fundAccess: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+  audits: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+  externalDependencies: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9',
+  trackRecord: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+};
+
+function getRating(key: string, val: string): '✓' | '⚠' | '✗' | '' {
+  if (key === 'trackRecord') return '';
+  return ratingMap[key]?.[val] || '';
+}
+
+const entries = Object.entries(risks) as [string, string][];
+---
+
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+  {entries.map(([key, value]) => {
+    const rating = getRating(key, value);
+    const isGood = rating === '✓';
+    const isWarn = rating === '⚠';
+    const isBad  = rating === '✗';
+
+    const iconColorClass = isGood ? 'text-good' : isWarn ? 'text-warning' : isBad ? 'text-bad' : 'text-text-muted';
+    const valueColorClass = rating ? iconColorClass : 'text-text-secondary';
+    const borderClass = isGood
+      ? 'border-l-good/40'
+      : isWarn
+      ? 'border-l-warning/40'
+      : isBad
+      ? 'border-l-bad/40'
+      : 'border-l-border-accent';
+
+    return (
+      <div class:list={['bg-bg-card border border-border-subtle rounded-lg border-l-[3px] flex flex-col gap-2 px-4 py-3.5', borderClass]}>
+        <div class="flex items-center gap-2">
+          <div class:list={['shrink-0', iconColorClass]}>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d={icons[key] || icons.trackRecord} />
+            </svg>
+          </div>
+          <span class="text-[11px] font-medium text-text-muted uppercase tracking-wider">{riskLabels[key]}</span>
+        </div>
+        <div class:list={['text-sm font-semibold leading-snug', valueColorClass]}>
+          {prettyValues[value] || value}
+        </div>
+      </div>
+    );
+  })}
+</div>

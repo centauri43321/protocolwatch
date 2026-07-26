@@ -1,0 +1,18 @@
+{
+  "name": "protocolwatch-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "update-tvl": "node scripts/update-tvl.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.1.18",
+    "astro": "^5.18.1",
+    "tailwindcss": "^4.1.18"
+  }
+}

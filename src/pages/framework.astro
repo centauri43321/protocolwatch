@@ -1,0 +1,960 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StageBadge from "../components/StageBadge.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+import { getEntry } from "astro:content";
+import "../styles/prose.css";
+
+const page = await getEntry("pages", "framework");
+const { Content } = await page.render();
+---
+
+<BaseLayout
+    title="Framework"
+    description="ProtocolWatch Risk Assessment Framework"
+>
+    <Breadcrumb
+        items={[{ label: "Home", href: "/" }, { label: "Framework" }]}
+    />
+
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight mb-4">
+            ProtocolWatch Risk Assessment Framework
+        </h1>
+
+        <p class="text-base text-text-secondary leading-relaxed mb-6">
+            This framework provides a systematic approach to evaluating DeFi
+            protocols based on their level of decentralization, security
+            practices, and trust assumptions. Inspired by L2Beat's approach to
+            Layer 2 solutions, we categorize protocols into three stages based
+            on objective criteria.
+        </p>
+    </div>
+
+    <!-- Stage System Overview -->
+    <h2 class="text-xl font-semibold mb-4 mt-14">Stage System Overview</h2>
+
+    <div class="flex flex-col gap-8">
+        <p class="text-text-secondary leading-relaxed">
+            Protocols are evaluated across multiple dimensions and assigned to
+            one of three stages. Higher stages indicate lower custody-trust
+            requirements.
+        </p>
+
+        <div class="h-px bg-text-muted"></div>
+
+        <!-- Stage Cards -->
+        <div class="flex flex-col gap-10">
+            <!-- Stage 2 -->
+            <div
+                class="bg-bg-card border border-border-subtle border-t-2 border-t-stage-2/60 rounded-xl p-8"
+            >
+                <div class="flex items-center gap-3 mb-5">
+                    <StageBadge stage={2} size="md" />
+                    <h3 class="text-xl font-semibold">Trustless</h3>
+                </div>
+                <p class="text-text-secondary leading-relaxed mb-8">
+                    The user's funds are protected by code, not promises. A
+                    compromised or malicious admin cannot take user assets.
+                    Quality concerns about audits, governance opacity, or
+                    unrenounced backstop roles are noted as caveats but do not
+                    disqualify Stage 2 if no path exists to user funds.
+                </p>
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle"
+                >
+                    <h4
+                        class="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4"
+                    >
+                        Requirements (all must hold)
+                    </h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-2 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            Fund-holding contracts are immutable OR upgradeable only
+                            via decentralized governance with &ge;7-day timelock (no
+                            bypass)
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-2 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            No admin role can withdraw, freeze, seize, or block withdrawals
+                            of user funds under any condition
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-2 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            No critical external dependency that can cause loss (self-contained,
+                            or all deps decentralized/bonded)
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-2 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            12+ months in production with no exploit of the core fund-holding
+                            contracts
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-2 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            At least one credible independent audit from a reputable
+                            firm
+                        </li>
+                    </ul>
+                    <div class="mt-5 pt-5 border-t border-border-subtle">
+                        <h5
+                            class="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
+                        >
+                            Noted as caveats, but do NOT disqualify
+                        </h5>
+                        <ul class="text-sm text-text-secondary space-y-1">
+                            <li>
+                                &middot; Missing formal verification or bug
+                                bounty; only one audit
+                            </li>
+                            <li>
+                                &middot; Undisclosed composition of multisigs
+                                whose powers cannot touch user funds
+                            </li>
+                            <li>
+                                &middot; Unrenounced backstop / vetoer /
+                                guardian roles that cannot drain funds
+                            </li>
+                            <li>
+                                &middot; Factory upgradeability where existing
+                                deposits remain in immutable contracts
+                            </li>
+                            <li>
+                                &middot; Front-end / DNS incidents where smart
+                                contracts were unaffected
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage 1 -->
+            <div
+                class="bg-bg-card border border-border-subtle border-t-2 border-t-stage-1/60 rounded-xl p-8"
+            >
+                <div class="flex items-center gap-3 mb-5">
+                    <StageBadge stage={1} size="md" />
+                    <h3 class="text-xl font-semibold">Limited Trust</h3>
+                </div>
+                <p class="text-text-secondary leading-relaxed mb-8">
+                    Meaningful safeguards exist, but governance or admin retains
+                    powers that could indirectly affect user funds. For example
+                    via a malicious upgrade pushed after timelock, parameter
+                    changes that affect fund recoverability, or temporary
+                    withdrawal pauses. Users have time to exit before harmful
+                    changes take effect.
+                </p>
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle"
+                >
+                    <h4
+                        class="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4"
+                    >
+                        Requirements (all must hold)
+                    </h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-1 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            &ge;48-hour timelock on critical upgrades of fund-holding
+                            contracts, no bypass path
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-1 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            Admin control via decentralized governance OR 3-of-5+
+                            diverse multisig
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-1 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            Admin powers scoped. No direct fund drain, but indirect
+                            risk via upgrades or parameter changes is acceptable
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-1 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            External dependencies are decentralized or have fallbacks
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-1 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            6+ months of production operation
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-1 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                            At least one independent audit from a reputable firm
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 0 -->
+            <div
+                class="bg-bg-card border border-border-subtle border-t-2 border-t-stage-0/60 rounded-xl p-8"
+            >
+                <div class="flex items-center gap-3 mb-5">
+                    <StageBadge stage={0} size="md" />
+                    <h3 class="text-xl font-semibold">Fully Assisted</h3>
+                </div>
+                <p class="text-text-secondary leading-relaxed mb-8">
+                    The default stage. The protocol requires significant trust
+                    in centralized parties or admin mechanisms. Any single
+                    trigger below is enough &mdash; this is not inherently bad
+                    for early-stage protocols or novel mechanisms, but it does
+                    mean users must trust the admin not to act maliciously.
+                </p>
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle"
+                >
+                    <h4
+                        class="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4"
+                    >
+                        Any of these triggers Stage 0
+                    </h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-0 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                ></path></svg
+                            >
+                            Admin can <strong>directly</strong> withdraw, freeze,
+                            or seize user funds
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-0 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                ></path></svg
+                            >
+                            Instant upgrades possible OR very short timelocks (&lt;48
+                            hours) on fund-holding contracts
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-0 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                ></path></svg
+                            >
+                            Single EOA or weak multisig (e.g., 2-of-3) controlling
+                            fund-touching functions
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-0 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                ></path></svg
+                            >
+                            Centralized or unconstrained external dependency with
+                            no fallback
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-0 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                ></path></svg
+                            >
+                            No public audit, OR less than 6 months in production
+                        </li>
+                        <li class="flex items-start gap-2 text-text-primary">
+                            <svg
+                                class="w-4 h-4 text-stage-0 mt-1 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                ></path></svg
+                            >
+                            Recent unresolved exploit of the core fund-holding logic
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         RISK DIMENSIONS — Detailed Breakdowns
+         Each dimension gets intro + enum-value cards, matching the style
+         previously used only for Offchain Dependency. This keeps the
+         framework page as one coherent reference.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <h2 class="text-xl font-semibold mb-4 mt-14">Risk Dimensions</h2>
+
+    <p class="text-text-secondary leading-relaxed mb-8">
+        Each protocol is evaluated across six dimensions. The combination of
+        these factors determines the overall stage classification. Click into
+        any protocol to see its individual ratings.
+    </p>
+
+    <div class="flex flex-col gap-10">
+        <!-- 1. UPGRADEABILITY -->
+        <div class="bg-bg-card border border-border-subtle rounded-xl p-8">
+            <h3 class="text-lg font-semibold text-text-primary mb-2">
+                Upgradeability
+            </h3>
+            <p class="text-text-secondary leading-relaxed mb-4">
+                Measures whether and how core smart contracts can be modified
+                after deployment, and how much warning users get before changes
+                take effect.
+            </p>
+            <p class="text-text-muted text-sm leading-relaxed mb-6 italic">
+                Are contracts immutable? What timelock delays exist? Who can
+                trigger an upgrade?
+            </p>
+
+            <div class="flex flex-col gap-4">
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Immutable
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Core contracts cannot be upgraded, replaced, or modified
+                        by anyone. The code deployed at launch is the code that
+                        runs forever. This is the strongest guarantee against
+                        malicious changes but removes the ability to fix bugs.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            7+ Day Timelock
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Contracts are upgradeable, but changes are delayed by at
+                        least 7 days before taking effect. Users have ample time
+                        to review proposed changes and exit the protocol if they
+                        disagree. This is the gold standard for upgradeable
+                        contracts.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-warning/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-warning font-bold shrink-0"
+                            >&#9888;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            48h+ Timelock
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Upgrades are delayed by at least 48 hours. Users have
+                        some time to react, but the window is tight &mdash;
+                        especially for large positions that may be difficult to
+                        unwind quickly. Acceptable but not ideal.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-bad/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-bad font-bold shrink-0">&#10007;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Instant Upgrade
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Contracts can be upgraded immediately with no delay. A
+                        compromised or malicious admin could drain funds or
+                        alter protocol behavior without giving users any time to
+                        exit. This is the highest-risk configuration for
+                        upgradeable contracts.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ADMIN CONTROL -->
+        <div class="bg-bg-card border border-border-subtle rounded-xl p-8">
+            <h3 class="text-lg font-semibold text-text-primary mb-2">
+                Admin Control
+            </h3>
+            <p class="text-text-secondary leading-relaxed mb-4">
+                Evaluates who holds privileged access to protocol functions
+                &mdash; such as upgrading contracts, pausing operations, or
+                changing parameters &mdash; and how distributed that control is.
+            </p>
+            <p class="text-text-muted text-sm leading-relaxed mb-6 italic">
+                Is the protocol governed by token holders, a multisig, or a
+                single wallet? How many signers are required, and are they
+                diverse?
+            </p>
+
+            <div class="flex flex-col gap-4">
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">None</h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        No admin, owner, or governance mechanism exists. The
+                        protocol's smart contracts are fully autonomous with no
+                        privileged functions whatsoever. No entity can modify
+                        parameters, pause operations, or intervene in any way.
+                        This is the strongest possible guarantee &mdash; the
+                        protocol operates exactly as deployed with zero human
+                        control surface.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            DAO Governance
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Protocol changes require approval from decentralized
+                        token-holder governance. No single entity or small group
+                        can push through changes unilaterally. Proposals are
+                        public and go through on-chain voting with meaningful
+                        quorum thresholds.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-warning/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-warning font-bold shrink-0"
+                            >&#9888;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Diverse Multisig
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Admin functions are controlled by a multisig with a
+                        meaningful threshold (e.g., 4-of-7 or higher) and
+                        signers from multiple independent organizations.
+                        Collusion is difficult but not impossible. A step below
+                        full governance but significantly better than a weak
+                        multisig.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-warning/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-warning font-bold shrink-0"
+                            >&#9888;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Weak Multisig
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        A multisig with a low threshold (e.g., 2-of-3) or
+                        signers that are not independently verified. A small
+                        number of compromised keys could take full control.
+                        Better than a single wallet but not a meaningful
+                        security barrier against a determined attacker.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-bad/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-bad font-bold shrink-0">&#10007;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Single EOA
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        All privileged functions are controlled by a single
+                        externally owned account. One compromised private key
+                        means total protocol compromise. This is the
+                        highest-risk admin configuration &mdash; no redundancy,
+                        no separation of duties.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. FUND ACCESS -->
+        <div class="bg-bg-card border border-border-subtle rounded-xl p-8">
+            <h3 class="text-lg font-semibold text-text-primary mb-2">
+                Fund Access
+            </h3>
+            <p class="text-text-secondary leading-relaxed mb-4">
+                Assesses whether protocol administrators can directly access,
+                freeze, or redirect user-deposited funds through privileged
+                contract functions.
+            </p>
+            <p class="text-text-muted text-sm leading-relaxed mb-6 italic">
+                Can anyone withdraw user funds? Under what conditions? Are there
+                emergency drain functions?
+            </p>
+
+            <div class="flex flex-col gap-4">
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Impossible
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        No admin function exists that could move, freeze, or
+                        redirect user funds. The smart contracts enforce that
+                        only the depositor (or authorized liquidator) can affect
+                        a user's position. Even a compromised admin key cannot
+                        touch user assets.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-warning/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-warning font-bold shrink-0"
+                            >&#9888;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Restricted
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Admin can indirectly affect user funds through upgrade
+                        mechanisms, parameter changes, or emergency pause
+                        functions. Direct withdrawal is not possible, but a
+                        malicious upgrade could introduce drain logic. The risk
+                        is real but requires multiple steps or conspicuous
+                        on-chain actions.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-bad/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-bad font-bold shrink-0">&#10007;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Possible
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Admin has the ability to directly access or drain user
+                        funds through existing contract functions. This may be
+                        intentional (e.g., an emergency recovery mechanism) but
+                        represents the highest trust requirement &mdash; users
+                        must trust the admin not to rug.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. AUDITS -->
+        <div class="bg-bg-card border border-border-subtle rounded-xl p-8">
+            <h3 class="text-lg font-semibold text-text-primary mb-2">Audits</h3>
+            <p class="text-text-secondary leading-relaxed mb-4">
+                Measures the depth and breadth of independent security reviews
+                the protocol has undergone. Audits are a <strong
+                    >minimum quality bar</strong
+                >, not the gate for trustlessness: a single audit from a
+                reputable firm is sufficient for Stage 2 if the fund-custody
+                surface is immutable and no admin role can touch user funds.
+                Conversely, extensive audits cannot rescue a protocol where
+                admins can drain user funds.
+            </p>
+            <p class="text-text-muted text-sm leading-relaxed mb-6 italic">
+                How many independent audits from reputable firms? Has formal
+                verification been performed on critical paths?
+            </p>
+
+            <div class="flex flex-col gap-4">
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Extensive
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Multiple independent audits from top-tier firms, plus
+                        formal verification of critical invariants. The protocol
+                        has invested heavily in security assurance. Bug bounty
+                        programs are typically active alongside extensive audit
+                        coverage.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Multiple
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        At least two independent security audits from reputable
+                        firms. Multiple perspectives reduce the chance of shared
+                        blind spots. This is the standard expected for any
+                        protocol handling significant TVL.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-warning/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-warning font-bold shrink-0"
+                            >&#9888;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">Single</h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        One audit from a reputable firm. Sufficient for any
+                        stage <strong>if</strong> the fund-custody surface is immutable
+                        (or upgrade-constrained) and no admin role can touch user
+                        funds. Note in the assessment as a caveat &mdash; multiple
+                        audits are still preferable &mdash; but do not downgrade the
+                        stage on this basis alone.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-bad/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-bad font-bold shrink-0">&#10007;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">None</h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        No independent security audit has been completed or
+                        publicly disclosed. The protocol's security relies
+                        entirely on internal review. This is the highest-risk
+                        configuration &mdash; critical vulnerabilities may exist
+                        undiscovered.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. EXTERNAL DEPENDENCIES -->
+        <div class="bg-bg-card border border-border-subtle rounded-xl p-8">
+            <h3 class="text-lg font-semibold text-text-primary mb-2">
+                External Dependencies
+            </h3>
+            <p class="text-text-secondary leading-relaxed mb-4">
+                Evaluates how much the protocol relies on external systems
+                &mdash; oracle feeds, off-chain operators, bridges, or
+                third-party infrastructure &mdash; and how constrained those
+                systems are from misbehaving.
+            </p>
+            <p class="text-text-muted text-sm leading-relaxed mb-6 italic">
+                What oracle type does the protocol use? Are there fallback
+                mechanisms? Does core functionality depend on off-chain actors,
+                and are those actors bonded or governed?
+            </p>
+
+            <div class="flex flex-col gap-4">
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">None</h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        No external systems are required for core protocol
+                        operation. Price discovery, execution, and settlement
+                        all happen on-chain without reliance on oracles,
+                        keepers, or off-chain actors. The protocol would
+                        continue functioning identically if every external
+                        service disappeared.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-good/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-good font-bold shrink-0"
+                            >&#10003;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Decentralized
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        External dependencies exist but are all decentralized
+                        and well-constrained. Oracle feeds come from
+                        decentralized networks (e.g., Chainlink, Uniswap TWAP).
+                        Any off-chain actors are bonded with slashable
+                        collateral or governed by credibly neutral on-chain
+                        processes. No single entity can disrupt protocol
+                        operation.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-warning/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-warning font-bold shrink-0"
+                            >&#9888;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">Mixed</h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        The protocol has a mix of decentralized and centralized
+                        external dependencies. Examples: decentralized oracle
+                        feeds alongside critical off-chain actors that are
+                        governed but not fully constrained, or centralized
+                        oracle feeds with minor off-chain components. The trust
+                        surface is partially mitigated but not eliminated.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-bad/40"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-bad font-bold shrink-0">&#10007;</span
+                        >
+                        <h4 class="font-semibold text-text-primary">
+                            Centralized
+                        </h4>
+                    </div>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Core functionality depends on centralized or
+                        unconstrained external systems. The protocol relies on
+                        trust alone &mdash; whether in a centralized oracle, an
+                        unbonded operator set, or a third-party service with no
+                        fallback. If those systems fail, act maliciously, or are
+                        coerced, users may lose access to funds or receive
+                        incorrect execution.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. TRACK RECORD -->
+        <div class="bg-bg-card border border-border-subtle rounded-xl p-8">
+            <h3 class="text-lg font-semibold text-text-primary mb-2">
+                Track Record
+            </h3>
+            <p class="text-text-secondary leading-relaxed mb-4">
+                Captures how long the protocol has operated in production with
+                real economic value at stake, and whether it has survived
+                security incidents or market stress events.
+            </p>
+            <p class="text-text-muted text-sm leading-relaxed mb-6 italic">
+                How long has the protocol been live with significant TVL? Has it
+                been exploited? How did the team respond to past incidents?
+            </p>
+
+            <div
+                class="bg-bg-primary/50 rounded-lg p-6 border border-border-subtle border-l-[3px] border-l-border-accent"
+            >
+                <p class="text-text-secondary text-sm leading-relaxed">
+                    Track record is assessed as free text rather than as a fixed
+                    grade, because production history is nuanced. A protocol
+                    live for 4+ years with no incidents is fundamentally
+                    different from one live for 4+ years with multiple exploits
+                    and recoveries. Both carry different risk profiles. We
+                    report the duration and notable events, but do not factor
+                    them into the overall stage classification due to the
+                    inherent subjectivity of the topic.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prose-content mt-16">
+        <Content />
+    </div>
+</BaseLayout>

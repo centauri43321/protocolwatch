@@ -1,0 +1,73 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProtocolCard from '../../components/ProtocolCard.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+export async function getStaticPaths() {
+  const categories = [
+    { slug: 'dexes', name: 'Decentralized Exchanges (DEXes)', description: 'Automated market makers and decentralized trading protocols' },
+    { slug: 'lending', name: 'Lending Protocols', description: 'Decentralized lending and borrowing platforms' },
+    { slug: 'liquid-staking', name: 'Liquid Staking', description: 'Protocols that provide liquid staking derivatives' },
+    { slug: 'bridges', name: 'Bridges', description: 'Cross-chain bridges and interoperability protocols' },
+    { slug: 'derivatives', name: 'Derivatives', description: 'Decentralized derivatives and synthetic asset platforms' },
+    { slug: 'yield', name: 'Yield Protocols', description: 'Yield aggregators and optimization protocols' },
+    { slug: 'privacy', name: 'Privacy', description: 'Privacy-preserving protocols and mixers' },
+  ];
+
+  return categories.map(category => ({
+    params: { category: category.slug },
+    props: { category }
+  }));
+}
+
+const { category } = Astro.props;
+const protocols = await getCollection(category.slug as any);
+
+protocols.sort((a, b) => {
+  if (b.data.stage !== a.data.stage) return b.data.stage - a.data.stage;
+  return a.data.name.localeCompare(b.data.name);
+});
+
+const siteUrl = (Astro.site?.href ?? 'https://protocolwatch.xyz/').replace(/\/$/, '');
+const metaDescription = `${category.description}. ${protocols.length} protocols risk-assessed with the ProtocolWatch 3-stage framework.`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
+    { '@type': 'ListItem', position: 2, name: category.name, item: `${siteUrl}/${category.slug}/` },
+  ],
+};
+---
+
+<BaseLayout title={category.name} description={metaDescription} jsonLd={jsonLd}>
+  <Breadcrumb items={[
+    { label: 'Home', href: '/' },
+    { label: category.name },
+  ]} />
+
+  <div class="mb-10">
+    <div class="flex items-center gap-3 mb-2">
+      <h1 class="text-2xl md:text-3xl font-bold tracking-tight">{category.name}</h1>
+      <span class="text-sm font-medium px-2.5 py-0.5 bg-bg-tertiary text-text-muted rounded-full">
+        {protocols.length}
+      </span>
+    </div>
+    <p class="text-text-secondary text-base">{category.description}</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    {protocols.map(protocol => (
+      <ProtocolCard
+        name={protocol.data.name}
+        stage={protocol.data.stage}
+        category={category.slug}
+        slug={protocol.slug}
+        tvl={protocol.data.tvl}
+        chains={protocol.data.chains}
+      />
+    ))}
+  </div>
+</BaseLayout>

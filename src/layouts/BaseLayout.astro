@@ -1,0 +1,476 @@
+---
+import { getCollection } from 'astro:content';
+import { ClientRouter } from 'astro:transitions';
+import SearchDialog from '../components/SearchDialog.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  fullTitle?: string;
+  description?: string;
+  jsonLd?: Record<string, any> | Record<string, any>[];
+}
+
+const { title, fullTitle, description = "ProtocolWatch — DeFi Protocol Risk Assessment", jsonLd } = Astro.props;
+const pageTitle = fullTitle ?? `${title} - ProtocolWatch`;
+const structuredData = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const currentPath = Astro.url.pathname;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
+
+// Get all protocols for sidebar navigation
+const dexes = await getCollection('dexes');
+const lending = await getCollection('lending');
+const liquidStaking = await getCollection('liquid-staking');
+const bridges = await getCollection('bridges');
+const derivatives = await getCollection('derivatives');
+const yieldProtocols = await getCollection('yield');
+const privacy = await getCollection('privacy');
+
+// Group protocols by baseName within each category
+interface ProtocolGroup {
+  baseName: string;
+  protocols: any[];
+  hasMultipleVersions: boolean;
+}
+
+function groupProtocols(protocols: any[]): ProtocolGroup[] {
+  const groupsMap = new Map<string, ProtocolGroup>();
+
+  protocols.forEach(protocol => {
+    const baseName = protocol.data.baseName || protocol.data.name;
+    if (!groupsMap.has(baseName)) {
+      groupsMap.set(baseName, { baseName, protocols: [], hasMultipleVersions: false });
+    }
+    groupsMap.get(baseName)!.protocols.push(protocol);
+  });
+
+  groupsMap.forEach(group => {
+    group.hasMultipleVersions = group.protocols.length > 1;
+    group.protocols.sort((a, b) => {
+      if (b.data.stage !== a.data.stage) return b.data.stage - a.data.stage;
+      return a.data.name.localeCompare(b.data.name);
+    });
+  });
+
+  return Array.from(groupsMap.values()).sort((a, b) => a.baseName.localeCompare(b.baseName));
+}
+
+const categories = [
+  { name: 'DEXes', slug: 'dexes', protocolGroups: groupProtocols(dexes) },
+  { name: 'Lending', slug: 'lending', protocolGroups: groupProtocols(lending) },
+  { name: 'Liquid Staking', slug: 'liquid-staking', protocolGroups: groupProtocols(liquidStaking) },
+  { name: 'Bridges', slug: 'bridges', protocolGroups: groupProtocols(bridges) },
+  { name: 'Derivatives', slug: 'derivatives', protocolGroups: groupProtocols(derivatives) },
+  { name: 'Yield', slug: 'yield', protocolGroups: groupProtocols(yieldProtocols) },
+  { name: 'Privacy', slug: 'privacy', protocolGroups: groupProtocols(privacy) },
+].filter(cat => cat.protocolGroups.length > 0);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{pageTitle}</title>
+  <meta name="description" content={description}>
+  <meta name="theme-color" content="#0a0a0f">
+  <link rel="canonical" href={canonicalURL}>
+  <link rel="icon" href="/ProtocolWatch_Logo_NoText.png" type="image/png">
+  <!-- Open Graph -->
+  <meta property="og:title" content={pageTitle}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={canonicalURL}>
+  <meta property="og:image" content={`${Astro.url.origin}/ProtocolWatch_Logo_NoText.png`}>
+  <meta property="og:type" content="website">
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content={`${Astro.url.origin}/ProtocolWatch_Logo_NoText.png`}>
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="/ProtocolWatch_Logo_NoText.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  {structuredData.map(schema => (
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  ))}
+  <ClientRouter />
+</head>
+<body class="antialiased">
+  <!-- Mobile menu toggle -->
+  <button
+    id="mobile-toggle"
+    class="fixed top-4 left-4 z-[60] hidden max-md:flex items-center gap-2 px-3 py-2
+           bg-bg-secondary/90 backdrop-blur-md border border-border-primary rounded-lg
+           text-text-primary text-sm cursor-pointer transition-all duration-200 hover:bg-bg-hover"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+    <span>Menu</span>
+  </button>
+
+  <!-- Mobile backdrop -->
+  <div id="sidebar-backdrop" class="fixed inset-0 z-[39] bg-black/50 backdrop-blur-sm hidden max-md:block opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <div class="flex min-h-screen gap-6 max-md:gap-0">
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="sticky top-0 h-screen w-[280px] shrink-0 bg-bg-secondary/80 backdrop-blur-xl
+             border-r border-border-subtle overflow-y-auto
+             max-md:fixed max-md:left-0 max-md:top-0 max-md:z-40
+             max-md:transition-transform max-md:duration-300 max-md:ease-out
+             max-md:-translate-x-full"
+      transition:persist
+    >
+      <!-- Sidebar header -->
+      <div class="px-5 pt-6 pb-4">
+        <a href="/" class="block">
+          <img src="/ProtocolWatch_Logo_Transparent.png" alt="ProtocolWatch" class="h-32 w-auto" />
+        </a>
+      </div>
+
+      <!-- Search trigger -->
+      <div class="px-4 mb-4">
+        <button
+          id="search-trigger"
+          class="w-full flex items-center gap-3 px-3 py-2 bg-bg-primary/60 border border-border-subtle rounded-lg
+                 text-sm text-text-muted cursor-pointer transition-all duration-150
+                 hover:border-border-accent hover:text-text-secondary"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span>Search...</span>
+          <kbd class="ml-auto text-[10px] bg-bg-tertiary px-1.5 py-0.5 rounded border border-border-subtle font-mono">Ctrl+K</kbd>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="px-2 pb-4">
+        {categories.map((category, categoryIndex) => {
+          const protocolCount = category.protocolGroups.reduce((sum, g) => sum + g.protocols.length, 0);
+          const categoryId = `cat-${category.slug}`;
+          const isCurrentCategory = currentPath.startsWith(`/${category.slug}/`) || currentPath === `/${category.slug}`;
+          return (
+          <div class="mb-1.5">
+            <button
+              type="button"
+              class:list={[
+                'category-header w-full flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer select-none transition-all duration-150 hover:bg-bg-hover',
+                isCurrentCategory ? 'is-current-category' : ''
+              ]}
+              data-category-id={categoryId}
+            >
+              <svg class="category-arrow w-3.5 h-3.5 text-text-muted transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+              </svg>
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-text-muted">{category.name}</span>
+              <span class="ml-auto text-[10px] text-text-muted bg-bg-primary/60 px-1.5 py-0.5 rounded-full font-mono">{protocolCount}</span>
+            </button>
+
+            <ul class="category-list hidden space-y-0.5 mt-1 mb-3" data-parent-category={categoryId}>
+              {category.protocolGroups.map((group, groupIndex) => {
+                if (group.hasMultipleVersions) {
+                  const uniqueId = `${categoryIndex}-${groupIndex}`;
+                  return (
+                    <li>
+                      <div
+                        class="protocol-group-header flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-text-secondary cursor-pointer select-none transition-all duration-150 hover:bg-bg-hover hover:text-text-primary"
+                        data-group-id={uniqueId}
+                      >
+                        <svg class="expand-arrow w-4 h-4 text-text-muted transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span class="font-medium">{group.baseName}</span>
+                        <span class="ml-auto text-xs text-text-muted bg-bg-primary/60 px-1.5 py-0.5 rounded-full">{group.protocols.length}</span>
+                      </div>
+                      <ul class="version-list hidden ml-4 border-l border-border-subtle" data-parent-group={uniqueId}>
+                        {group.protocols.map(protocol => {
+                          const href = `/${category.slug}/${protocol.slug}`;
+                          const isActive = currentPath === href || currentPath === href + '/';
+                          return (
+                            <li>
+                              <a
+                                href={href}
+                                class:list={[
+                                  'block px-3 py-2.5 text-sm transition-all duration-150 rounded-r-lg -ml-px border-l-2',
+                                  isActive
+                                    ? 'text-accent-light border-accent bg-accent-dim font-medium'
+                                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border-transparent hover:border-text-secondary/30'
+                                ]}
+                              >
+                                {protocol.data.name}
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </li>
+                  );
+                } else {
+                  const protocol = group.protocols[0];
+                  const href = `/${category.slug}/${protocol.slug}`;
+                  const isActive = currentPath === href || currentPath === href + '/';
+                  return (
+                    <li>
+                      <a
+                        href={href}
+                        class:list={[
+                          'block px-3 py-2.5 rounded-lg text-sm transition-all duration-150',
+                          isActive
+                            ? 'text-accent-light bg-accent-dim font-medium'
+                            : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                        ]}
+                      >
+                        {protocol.data.name}
+                      </a>
+                    </li>
+                  );
+                }
+              })}
+            </ul>
+          </div>
+          );
+        })}
+      </nav>
+
+      <!-- Restore sidebar state immediately -->
+      <script is:inline>
+        (function() {
+          try {
+            // Restore version-group expansion
+            var saved = localStorage.getItem('protocolwatch-sidebar-state');
+            if (saved) {
+              var state = JSON.parse(saved);
+              Object.keys(state).forEach(function(groupId) {
+                if (state[groupId]) {
+                  var header = document.querySelector('[data-group-id="' + groupId + '"]');
+                  var list = document.querySelector('[data-parent-group="' + groupId + '"]');
+                  if (header && list) {
+                    header.classList.add('expanded');
+                    list.classList.remove('hidden');
+                    list.classList.add('block');
+                  }
+                }
+              });
+            }
+
+            // Determine which category to open: current page's category wins; else last opened
+            var path = window.location.pathname;
+            var currentCategoryId = null;
+            var headers = document.querySelectorAll('[data-category-id]');
+            headers.forEach(function(h) {
+              var id = h.getAttribute('data-category-id');
+              var slug = id.replace(/^cat-/, '');
+              if (path.indexOf('/' + slug + '/') === 0 || path === '/' + slug) {
+                currentCategoryId = id;
+              }
+            });
+            var openId = currentCategoryId || localStorage.getItem('protocolwatch-sidebar-category');
+            if (openId) {
+              var header = document.querySelector('[data-category-id="' + openId + '"]');
+              var list = document.querySelector('[data-parent-category="' + openId + '"]');
+              if (header && list) {
+                header.classList.add('expanded');
+                list.classList.remove('hidden');
+              }
+            }
+          } catch (e) {}
+        })();
+      </script>
+
+      <!-- Sidebar footer -->
+      <div class="px-4 py-4 mt-2 border-t border-border-subtle">
+        <div class="flex flex-col gap-1">
+          <a href="/" class:list={['flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all duration-150',
+            currentPath === '/' ? 'text-accent-light bg-accent-dim font-medium' : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover']}>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Home
+          </a>
+          <a href="/framework" class:list={['flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all duration-150',
+            currentPath === '/framework' || currentPath === '/framework/' ? 'text-accent-light bg-accent-dim font-medium' : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover']}>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Framework
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 min-w-0 min-h-screen">
+      <div class="max-w-6xl mx-auto px-8 py-12 xl:px-12 2xl:px-16 max-md:px-5 max-md:pt-18 max-md:pb-8" transition:animate="fade">
+        <slot />
+      </div>
+    </main>
+  </div>
+
+  <!-- Search dialog -->
+  <SearchDialog />
+
+  <!-- Sidebar expand arrow rotation style -->
+  <style>
+    .protocol-group-header.expanded .expand-arrow {
+      transform: rotate(90deg);
+    }
+    .category-header.expanded .category-arrow {
+      transform: rotate(90deg);
+    }
+    .category-header.is-current-category > span:first-of-type {
+      color: var(--color-text-secondary);
+    }
+  </style>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      // Mobile menu toggle
+      const toggle = document.getElementById('mobile-toggle');
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+
+      function openSidebar() {
+        sidebar?.classList.remove('max-md:-translate-x-full');
+        sidebar?.classList.add('max-md:translate-x-0');
+        if (backdrop) {
+          backdrop.classList.remove('opacity-0', 'pointer-events-none');
+          backdrop.classList.add('opacity-100', 'pointer-events-auto');
+        }
+      }
+
+      function closeSidebar() {
+        sidebar?.classList.add('max-md:-translate-x-full');
+        sidebar?.classList.remove('max-md:translate-x-0');
+        if (backdrop) {
+          backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+          backdrop.classList.add('opacity-0', 'pointer-events-none');
+        }
+      }
+
+      toggle?.addEventListener('click', () => {
+        if (sidebar?.classList.contains('max-md:translate-x-0')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+
+      backdrop?.addEventListener('click', closeSidebar);
+
+      // Update active link highlighting (sidebar persists across navigations)
+      function updateActiveLinks() {
+        const path = window.location.pathname;
+        const sidebarLinks = sidebar?.querySelectorAll('nav a');
+        sidebarLinks?.forEach(link => {
+          const href = link.getAttribute('href');
+          const isActive = href === path || href + '/' === path || href === path + '/';
+          if (link.classList.contains('border-l-2')) {
+            // Versioned protocol link
+            link.classList.toggle('text-accent-light', isActive);
+            link.classList.toggle('border-accent', isActive);
+            link.classList.toggle('bg-accent-dim', isActive);
+            link.classList.toggle('font-medium', isActive);
+            link.classList.toggle('text-text-secondary', !isActive);
+            link.classList.toggle('border-transparent', !isActive);
+          } else {
+            // Standalone protocol link
+            link.classList.toggle('text-accent-light', isActive);
+            link.classList.toggle('bg-accent-dim', isActive);
+            link.classList.toggle('font-medium', isActive);
+            link.classList.toggle('text-text-secondary', !isActive);
+          }
+        });
+        // Also update footer links
+        const footerLinks = sidebar?.querySelectorAll('.border-t a');
+        footerLinks?.forEach(link => {
+          const href = link.getAttribute('href');
+          const isActive = href === path || href + '/' === path || href === path + '/';
+          link.classList.toggle('text-accent-light', isActive);
+          link.classList.toggle('bg-accent-dim', isActive);
+          link.classList.toggle('font-medium', isActive);
+          link.classList.toggle('text-text-secondary', !isActive);
+        });
+      }
+
+      updateActiveLinks();
+
+      // Close mobile sidebar on navigation
+      closeSidebar();
+
+      // Protocol group expansion with persistent state
+      const STORAGE_KEY = 'protocolwatch-sidebar-state';
+
+      function loadSidebarState(): Record<string, boolean> {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          return saved ? JSON.parse(saved) : {};
+        } catch {
+          return {};
+        }
+      }
+
+      function saveSidebarState(state: Record<string, boolean>) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch {}
+      }
+
+      // Category accordion (only one open at a time)
+      const CATEGORY_KEY = 'protocolwatch-sidebar-category';
+      const categoryHeaders = document.querySelectorAll('.category-header');
+
+      categoryHeaders.forEach(header => {
+        if (header.hasAttribute('data-listener-attached')) return;
+        header.setAttribute('data-listener-attached', 'true');
+
+        header.addEventListener('click', () => {
+          const categoryId = header.getAttribute('data-category-id');
+          const list = document.querySelector(`[data-parent-category="${categoryId}"]`);
+          const isExpanded = header.classList.contains('expanded');
+
+          // Collapse all categories first (accordion)
+          categoryHeaders.forEach(h => {
+            h.classList.remove('expanded');
+            const l = document.querySelector(`[data-parent-category="${h.getAttribute('data-category-id')}"]`);
+            l?.classList.add('hidden');
+          });
+
+          if (!isExpanded) {
+            header.classList.add('expanded');
+            list?.classList.remove('hidden');
+            try { localStorage.setItem(CATEGORY_KEY, categoryId || ''); } catch {}
+          } else {
+            try { localStorage.removeItem(CATEGORY_KEY); } catch {}
+          }
+        });
+      });
+
+      // Only attach click handlers if not already attached (sidebar persists)
+      const protocolGroupHeaders = document.querySelectorAll('.protocol-group-header');
+
+      protocolGroupHeaders.forEach(header => {
+        if (header.hasAttribute('data-listener-attached')) return;
+        header.setAttribute('data-listener-attached', 'true');
+
+        header.addEventListener('click', () => {
+          const groupId = header.getAttribute('data-group-id');
+          const versionList = document.querySelector(`[data-parent-group="${groupId}"]`);
+
+          header.classList.toggle('expanded');
+          versionList?.classList.toggle('hidden');
+          versionList?.classList.toggle('block');
+
+          if (groupId) {
+            const sidebarState = loadSidebarState();
+            sidebarState[groupId] = header.classList.contains('expanded');
+            saveSidebarState(sidebarState);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,550 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StageBadge from '../components/StageBadge.astro';
+import StatsBar from '../components/StatsBar.astro';
+import { getCollection, getEntry } from 'astro:content';
+import '../styles/prose.css';
+
+const page = await getEntry('pages', 'home');
+const { Content } = await page.render();
+
+const allProtocols = [
+  ...(await getCollection('dexes')),
+  ...(await getCollection('lending')),
+  ...(await getCollection('liquid-staking')),
+  ...(await getCollection('bridges')),
+  ...(await getCollection('derivatives')),
+  ...(await getCollection('yield')),
+  ...(await getCollection('privacy')),
+];
+
+allProtocols.sort((a, b) => {
+  if (b.data.stage !== a.data.stage) return b.data.stage - a.data.stage;
+  return a.data.name.localeCompare(b.data.name);
+});
+
+const stage0 = allProtocols.filter(p => p.data.stage === 0).length;
+const stage1 = allProtocols.filter(p => p.data.stage === 1).length;
+const stage2 = allProtocols.filter(p => p.data.stage === 2).length;
+
+// Compute chain counts across all protocols, sorted by frequency
+const chainCounts = new Map<string, number>();
+allProtocols.forEach(p => {
+  p.data.chains.forEach(c => {
+    chainCounts.set(c, (chainCounts.get(c) ?? 0) + 1);
+  });
+});
+const sortedChains = Array.from(chainCounts.entries())
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+const categoryNames: Record<string, string> = {
+  'dexes': 'DEX',
+  'lending': 'Lending',
+  'liquid-staking': 'Liquid Staking',
+  'bridges': 'Bridge',
+  'derivatives': 'Derivatives',
+  'yield': 'Yield',
+  'privacy': 'Privacy',
+};
+
+const categoryColors: Record<string, string> = {
+  'dexes': 'bg-indigo-500/10 text-indigo-400',
+  'lending': 'bg-blue-500/10 text-blue-400',
+  'liquid-staking': 'bg-purple-500/10 text-purple-400',
+  'bridges': 'bg-pink-500/10 text-pink-400',
+  'derivatives': 'bg-orange-500/10 text-orange-400',
+  'yield': 'bg-teal-500/10 text-teal-400',
+  'privacy': 'bg-emerald-500/10 text-emerald-400',
+};
+
+const siteUrl = (Astro.site?.href ?? 'https://protocolwatch.xyz/').replace(/\/$/, '');
+const homeDescription = `Systematic, L2Beat-style risk assessment of ${allProtocols.length}+ DeFi protocols across DEXes, lending, liquid staking, derivatives, yield, and more. Compare upgradeability, admin control, and fund-access risk on a 3-stage scale.`;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: 'ProtocolWatch',
+    url: `${siteUrl}/`,
+    logo: `${siteUrl}/ProtocolWatch_Logo_NoText.png`,
+    description: 'Systematic DeFi protocol risk assessment.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${siteUrl}/#website`,
+    name: 'ProtocolWatch',
+    url: `${siteUrl}/`,
+    description: homeDescription,
+    publisher: { '@id': `${siteUrl}/#organization` },
+  },
+];
+---
+
+<BaseLayout
+  title="Home"
+  fullTitle="ProtocolWatch - Systematic DeFi risk assessment"
+  description={homeDescription}
+  jsonLd={jsonLd}
+>
+  <div class="max-w-6xl mx-auto">
+  <div class="prose-content mb-10">
+    <Content />
+  </div>
+
+  <div class="flex flex-col gap-8">
+    <StatsBar
+      totalProtocols={allProtocols.length}
+      stage0Count={stage0}
+      stage1Count={stage1}
+      stage2Count={stage2}
+    />
+
+    <!-- Filter toolbar -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Category dropdown -->
+      <div class="relative" data-category-filter>
+        <button
+          type="button"
+          id="category-toggle"
+          class="filter-button inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border-subtle bg-bg-primary/60 text-xs text-text-secondary cursor-pointer transition-all duration-150 hover:border-border-accent hover:text-text-primary"
+        >
+          <span>Category</span>
+          <span id="category-count" class="hidden text-[10px] font-mono text-accent-light bg-accent-dim px-1.5 py-0.5 rounded">0</span>
+          <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div
+          id="category-menu"
+          class="hidden absolute z-20 mt-1 left-0 min-w-[200px] bg-bg-secondary border border-border-subtle rounded-lg shadow-lg p-1.5 max-h-72 overflow-y-auto"
+        >
+          {Object.entries(categoryNames).map(([slug, label]) => {
+            const count = allProtocols.filter(p => p.data.category === slug).length;
+            if (count === 0) return null;
+            return (
+              <button
+                type="button"
+                class="category-chip w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs text-text-secondary cursor-pointer transition-colors duration-150 hover:bg-bg-hover hover:text-text-primary"
+                data-category={slug}
+              >
+                <span>{label}</span>
+                <span class="text-[10px] text-text-muted font-mono">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- Chain dropdown -->
+      <div class="relative" data-chain-filter>
+        <button
+          type="button"
+          id="chain-toggle"
+          class="filter-button inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border-subtle bg-bg-primary/60 text-xs text-text-secondary cursor-pointer transition-all duration-150 hover:border-border-accent hover:text-text-primary"
+        >
+          <span>Chain</span>
+          <span id="chain-count" class="hidden text-[10px] font-mono text-accent-light bg-accent-dim px-1.5 py-0.5 rounded">0</span>
+          <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div
+          id="chain-menu"
+          class="hidden absolute z-20 mt-1 left-0 min-w-[220px] bg-bg-secondary border border-border-subtle rounded-lg shadow-lg p-1.5"
+        >
+          <input
+            type="text"
+            id="chain-search"
+            placeholder="Search chains..."
+            class="w-full px-2.5 py-1.5 mb-1.5 text-xs bg-bg-primary/60 border border-border-subtle rounded-md text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent"
+          />
+          <div class="max-h-60 overflow-y-auto">
+            {sortedChains.map(([chain, count]) => (
+              <button
+                type="button"
+                class="chain-chip w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs text-text-secondary capitalize cursor-pointer transition-colors duration-150 hover:bg-bg-hover hover:text-text-primary"
+                data-chain={chain}
+              >
+                <span>{chain}</span>
+                <span class="text-[10px] text-text-muted font-mono">{count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        id="filters-clear"
+        class="hidden text-xs text-text-muted hover:text-text-primary cursor-pointer transition-colors duration-150 px-2 py-1"
+      >
+        Clear all
+      </button>
+    </div>
+
+    <!-- Protocol Table -->
+    <div class="bg-bg-card border border-border-subtle rounded-xl">
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border-primary bg-bg-tertiary/50">
+            <th
+              class="text-left px-5 py-3.5 font-semibold text-text-secondary text-xs uppercase tracking-wider cursor-pointer select-none hover:text-text-primary transition-colors duration-150"
+              data-sort-col="name"
+            >
+              <span class="inline-flex items-center gap-1.5">
+                Protocol
+                <span class="sort-icon" aria-hidden="true">⇅</span>
+              </span>
+            </th>
+            <th
+              class="text-left px-5 py-3.5 font-semibold text-text-secondary text-xs uppercase tracking-wider cursor-pointer select-none hover:text-text-primary transition-colors duration-150"
+              data-sort-col="category"
+            >
+              <span class="inline-flex items-center gap-1.5">
+                Category
+                <span class="sort-icon" aria-hidden="true">⇅</span>
+              </span>
+            </th>
+            <th
+              class="text-left px-5 py-3.5 font-semibold text-text-secondary text-xs uppercase tracking-wider cursor-pointer select-none hover:text-text-primary transition-colors duration-150"
+              data-sort-col="stage"
+            >
+              <span class="inline-flex items-center gap-1.5">
+                Stage
+                <span class="sort-icon" aria-hidden="true">⇅</span>
+              </span>
+            </th>
+            <th
+              class="text-left px-5 py-3.5 font-semibold text-text-secondary text-xs uppercase tracking-wider max-sm:hidden cursor-pointer select-none hover:text-text-primary transition-colors duration-150"
+              data-sort-col="tvl"
+            >
+              <span class="inline-flex items-center gap-1.5">
+                TVL
+                <span class="sort-icon" aria-hidden="true">⇅</span>
+              </span>
+            </th>
+            <th class="text-left px-5 py-3.5 font-semibold text-text-secondary text-xs uppercase tracking-wider max-md:hidden">Chains</th>
+            <th
+              class="text-left px-5 py-3.5 font-semibold text-text-secondary text-xs uppercase tracking-wider max-sm:hidden cursor-pointer select-none hover:text-text-primary transition-colors duration-150"
+              data-sort-col="updated"
+            >
+              <span class="inline-flex items-center gap-1.5">
+                Updated
+                <span class="sort-icon" aria-hidden="true">⇅</span>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border-subtle" data-sort-tbody data-empty-row="empty-state">
+          {allProtocols.map(protocol => (
+            <tr
+              class="group transition-colors duration-150 hover:bg-bg-hover/50"
+              data-name={protocol.data.name}
+              data-category={categoryNames[protocol.data.category] ?? protocol.data.category}
+              data-category-slug={protocol.data.category}
+              data-stage={protocol.data.stage}
+              data-tvl={protocol.data.tvl ?? ''}
+              data-updated={protocol.data.lastUpdated}
+              data-chains={protocol.data.chains.join(',')}
+            >
+              <td class="px-5 py-3.5">
+                <a
+                  href={`/${protocol.data.category}/${protocol.slug}`}
+                  class="font-medium text-text-primary group-hover:text-accent-light transition-colors duration-150"
+                >
+                  {protocol.data.name}
+                </a>
+              </td>
+              <td class="px-5 py-3.5">
+                <span class:list={['text-xs font-medium px-2.5 py-1 rounded-full', categoryColors[protocol.data.category] || 'bg-bg-tertiary text-text-muted']}>
+                  {categoryNames[protocol.data.category]}
+                </span>
+              </td>
+              <td class="px-5 py-3.5">
+                <StageBadge stage={protocol.data.stage} size="sm" />
+              </td>
+              <td class="px-5 py-3.5 text-text-secondary max-sm:hidden">
+                {protocol.data.tvl || <span class="text-text-muted">--</span>}
+              </td>
+              <td class="px-5 py-3.5 max-md:hidden">
+                <div class="flex items-center gap-1.5">
+                  {protocol.data.chains.slice(0, 3).map(chain => (
+                    <span class="px-2 py-0.5 bg-bg-primary/60 rounded-md text-xs capitalize text-text-muted">
+                      {chain}
+                    </span>
+                  ))}
+                  {protocol.data.chains.length > 3 && (
+                    <span class="text-xs text-text-muted">+{protocol.data.chains.length - 3}</span>
+                  )}
+                </div>
+              </td>
+              <td class="px-5 py-3.5 text-text-muted text-xs max-sm:hidden">{protocol.data.lastUpdated}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .sort-icon {
+    font-size: 0.65rem;
+    opacity: 0.45;
+    transition: opacity 150ms ease;
+  }
+
+  [data-sort-col]:hover .sort-icon {
+    opacity: 0.75;
+  }
+
+  .chain-chip.is-active,
+  .category-chip.is-active {
+    background: var(--color-accent-dim);
+    color: var(--color-accent-light);
+  }
+  .chain-chip.is-active span:last-child,
+  .category-chip.is-active span:last-child {
+    color: var(--color-accent-light);
+  }
+  .filter-button.has-active {
+    border-color: var(--color-accent);
+    color: var(--color-accent-light);
+  }
+</style>
+
+<script>
+  // These columns default to descending on first click (highest/latest first)
+  const DESCENDING_FIRST = new Set(['stage', 'tvl', 'updated']);
+
+  function parseTvl(val: string): number {
+    if (!val) return -1;
+    const s = val.replace(/[$,\s]/g, '');
+    const m = s.match(/^([\d.]+)([BMKbmk]?)$/);
+    if (!m) return -1;
+    const n = parseFloat(m[1]);
+    const mult: Record<string, number> = { b: 1e9, m: 1e6, k: 1e3 };
+    return n * (mult[m[2].toLowerCase()] ?? 1);
+  }
+
+  function updateIcons(
+    headers: NodeListOf<HTMLElement>,
+    activeCol: string | null,
+    dir: 'asc' | 'desc'
+  ) {
+    headers.forEach(th => {
+      const icon = th.querySelector<HTMLElement>('.sort-icon');
+      if (!icon) return;
+      if (th.dataset.sortCol === activeCol) {
+        icon.textContent = dir === 'asc' ? '↑' : '↓';
+        icon.style.opacity = '1';
+        th.style.color = 'var(--color-accent-light)';
+      } else {
+        icon.textContent = '⇅';
+        icon.style.opacity = '';
+        th.style.color = '';
+      }
+    });
+  }
+
+  function sortRows(
+    tbody: HTMLElement,
+    col: string,
+    dir: 'asc' | 'desc'
+  ) {
+    const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr'));
+
+    rows.sort((a, b) => {
+      let result = 0;
+
+      if (col === 'stage') {
+        result = Number(a.dataset.stage ?? 0) - Number(b.dataset.stage ?? 0);
+      } else if (col === 'tvl') {
+        const tvlA = parseTvl(a.dataset.tvl ?? '');
+        const tvlB = parseTvl(b.dataset.tvl ?? '');
+        // Rows with no TVL always sink to bottom regardless of direction
+        if (tvlA === -1 && tvlB === -1) return 0;
+        if (tvlA === -1) return 1;
+        if (tvlB === -1) return -1;
+        result = tvlA - tvlB;
+      } else if (col === 'name') {
+        result = (a.dataset.name ?? '').localeCompare(b.dataset.name ?? '');
+      } else if (col === 'category') {
+        result = (a.dataset.category ?? '').localeCompare(b.dataset.category ?? '');
+      } else if (col === 'updated') {
+        result = (a.dataset.updated ?? '').localeCompare(b.dataset.updated ?? '');
+      }
+
+      return dir === 'asc' ? result : -result;
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+  }
+
+  function init() {
+    const tbody = document.querySelector<HTMLElement>('[data-sort-tbody]');
+    if (!tbody) return;
+
+    const headers = document.querySelectorAll<HTMLElement>('[data-sort-col]');
+    let activeCol: string | null = null;
+    let activeDir: 'asc' | 'desc' = 'asc';
+
+    headers.forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.sortCol!;
+
+        if (col === activeCol) {
+          activeDir = activeDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          activeCol = col;
+          activeDir = DESCENDING_FIRST.has(col) ? 'desc' : 'asc';
+        }
+
+        sortRows(tbody, activeCol, activeDir);
+        updateIcons(headers, activeCol, activeDir);
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', init);
+
+  // Chain + Category filters
+  function initFilters() {
+    const tbody = document.querySelector<HTMLElement>('[data-sort-tbody]');
+    if (!tbody) return;
+
+    const chainChips = document.querySelectorAll<HTMLElement>('[data-chain-filter] .chain-chip[data-chain]');
+    const categoryChips = document.querySelectorAll<HTMLElement>('[data-category-filter] .category-chip[data-category]');
+    const clearAll = document.getElementById('filters-clear');
+    const categoryToggle = document.getElementById('category-toggle');
+    const categoryMenu = document.getElementById('category-menu');
+    const categoryCount = document.getElementById('category-count');
+    const chainToggle = document.getElementById('chain-toggle');
+    const chainMenu = document.getElementById('chain-menu');
+    const chainCount = document.getElementById('chain-count');
+    const chainSearch = document.getElementById('chain-search') as HTMLInputElement | null;
+
+    const params = new URLSearchParams(window.location.search);
+    const chains = new Set<string>(
+      (params.get('chains') ?? '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    const categories = new Set<string>(
+      (params.get('categories') ?? '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+
+    const colspan = tbody.parentElement?.querySelector('thead tr')?.children.length ?? 6;
+    let emptyRow = tbody.querySelector<HTMLTableRowElement>('tr[data-empty-row]');
+    if (!emptyRow) {
+      emptyRow = document.createElement('tr');
+      emptyRow.dataset.emptyRow = '';
+      emptyRow.innerHTML = `<td colspan="${colspan}" class="px-5 py-10 text-center text-text-muted text-sm">No protocols match the selected filters.</td>`;
+      emptyRow.classList.add('hidden');
+      tbody.appendChild(emptyRow);
+    }
+
+    function apply() {
+      const rows = tbody!.querySelectorAll<HTMLTableRowElement>('tr:not([data-empty-row])');
+      let visible = 0;
+      rows.forEach(row => {
+        const rowChains = (row.dataset.chains ?? '').split(',');
+        const rowCategory = row.dataset.categorySlug ?? '';
+        const chainMatch = chains.size === 0 || rowChains.some(c => chains.has(c));
+        const categoryMatch = categories.size === 0 || categories.has(rowCategory);
+        const match = chainMatch && categoryMatch;
+        row.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      const anyActive = chains.size > 0 || categories.size > 0;
+      emptyRow!.classList.toggle('hidden', visible > 0 || !anyActive);
+
+      chainChips.forEach(c => c.classList.toggle('is-active', chains.has(c.dataset.chain!)));
+      categoryChips.forEach(c => c.classList.toggle('is-active', categories.has(c.dataset.category!)));
+
+      if (categoryCount) {
+        categoryCount.textContent = String(categories.size);
+        categoryCount.classList.toggle('hidden', categories.size === 0);
+      }
+      if (chainCount) {
+        chainCount.textContent = String(chains.size);
+        chainCount.classList.toggle('hidden', chains.size === 0);
+      }
+      categoryToggle?.classList.toggle('has-active', categories.size > 0);
+      chainToggle?.classList.toggle('has-active', chains.size > 0);
+      clearAll?.classList.toggle('hidden', chains.size === 0 && categories.size === 0);
+
+      const url = new URL(window.location.href);
+      if (chains.size === 0) url.searchParams.delete('chains');
+      else url.searchParams.set('chains', Array.from(chains).join(','));
+      if (categories.size === 0) url.searchParams.delete('categories');
+      else url.searchParams.set('categories', Array.from(categories).join(','));
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    chainChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const v = chip.dataset.chain!;
+        if (chains.has(v)) chains.delete(v); else chains.add(v);
+        apply();
+      });
+    });
+
+    categoryChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const v = chip.dataset.category!;
+        if (categories.has(v)) categories.delete(v); else categories.add(v);
+        apply();
+      });
+    });
+
+    clearAll?.addEventListener('click', () => { chains.clear(); categories.clear(); apply(); });
+
+    function toggleMenu(menu: HTMLElement | null, otherMenu: HTMLElement | null) {
+      if (!menu) return;
+      otherMenu?.classList.add('hidden');
+      menu.classList.toggle('hidden');
+    }
+    categoryToggle?.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleMenu(categoryMenu, chainMenu);
+    });
+    chainToggle?.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleMenu(chainMenu, categoryMenu);
+      if (chainMenu && !chainMenu.classList.contains('hidden')) chainSearch?.focus();
+    });
+    document.addEventListener('click', e => {
+      const target = e.target as Node;
+      if (categoryMenu && !categoryMenu.classList.contains('hidden')
+          && !categoryMenu.contains(target) && !categoryToggle?.contains(target)) {
+        categoryMenu.classList.add('hidden');
+      }
+      if (chainMenu && !chainMenu.classList.contains('hidden')
+          && !chainMenu.contains(target) && !chainToggle?.contains(target)) {
+        chainMenu.classList.add('hidden');
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        categoryMenu?.classList.add('hidden');
+        chainMenu?.classList.add('hidden');
+      }
+    });
+
+    chainSearch?.addEventListener('input', () => {
+      const q = chainSearch.value.trim().toLowerCase();
+      chainChips.forEach(chip => {
+        const name = (chip.dataset.chain ?? '').toLowerCase();
+        chip.classList.toggle('hidden', q !== '' && !name.includes(q));
+      });
+    });
+
+    apply();
+  }
+
+  document.addEventListener('astro:page-load', initFilters);
+</script>

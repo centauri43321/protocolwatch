@@ -1,0 +1,28 @@
+---
+interface Props {
+  totalProtocols: number;
+  stage0Count: number;
+  stage1Count: number;
+  stage2Count: number;
+}
+const { totalProtocols, stage0Count, stage1Count, stage2Count } = Astro.props;
+---
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+  <div class="bg-bg-card border border-border-subtle rounded-xl px-6 py-6 text-center transition-all duration-200 hover:border-border-accent">
+    <div class="text-4xl font-bold text-text-primary tracking-tight">{totalProtocols}</div>
+    <div class="text-sm text-text-secondary mt-2 tracking-wider">Protocols Assessed</div>
+  </div>
+  <div class="bg-bg-card border border-border-subtle rounded-xl px-6 py-6 text-center transition-all duration-200 hover:border-stage-2/30">
+    <div class="text-4xl font-bold text-stage-2 tracking-tight">{stage2Count}</div>
+    <div class="text-sm text-text-secondary mt-2 tracking-wider">Stage 2 &middot; Trustless</div>
+  </div>
+  <div class="bg-bg-card border border-border-subtle rounded-xl px-6 py-6 text-center transition-all duration-200 hover:border-stage-1/30">
+    <div class="text-4xl font-bold text-stage-1 tracking-tight">{stage1Count}</div>
+    <div class="text-sm text-text-secondary mt-2 tracking-wider">Stage 1 &middot; Limited Trust</div>
+  </div>
+  <div class="bg-bg-card border border-border-subtle rounded-xl px-6 py-6 text-center transition-all duration-200 hover:border-stage-0/30">
+    <div class="text-4xl font-bold text-stage-0 tracking-tight">{stage0Count}</div>
+    <div class="text-sm text-text-secondary mt-2 tracking-wider">Stage 0 &middot; Fully Assisted</div>
+  </div>
+</div>

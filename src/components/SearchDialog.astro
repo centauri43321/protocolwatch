@@ -1,0 +1,196 @@
+---
+import { getCollection } from 'astro:content';
+
+const allProtocols = [
+  ...(await getCollection('dexes')),
+  ...(await getCollection('lending')),
+  ...(await getCollection('liquid-staking')),
+  ...(await getCollection('bridges')),
+  ...(await getCollection('derivatives')),
+  ...(await getCollection('yield')),
+  ...(await getCollection('privacy')),
+];
+
+const searchIndex = allProtocols.map(p => ({
+  name: p.data.name,
+  category: p.data.category,
+  stage: p.data.stage,
+  slug: p.slug,
+  tvl: p.data.tvl || '',
+  chains: p.data.chains,
+}));
+
+const categoryNames: Record<string, string> = {
+  'dexes': 'DEX',
+  'lending': 'Lending',
+  'liquid-staking': 'Liquid Staking',
+  'bridges': 'Bridge',
+  'derivatives': 'Derivatives',
+  'yield': 'Yield',
+  'privacy': 'Privacy',
+};
+---
+
+<div id="search-overlay" class="fixed inset-0 z-[100] hidden items-start justify-center pt-[15vh] bg-black/60 backdrop-blur-sm">
+  <div class="w-full max-w-lg mx-4 bg-bg-secondary border border-border-primary rounded-2xl shadow-2xl overflow-hidden">
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-border-subtle">
+      <svg class="w-5 h-5 text-text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search protocols..."
+        autocomplete="off"
+        class="flex-1 bg-transparent text-text-primary text-base outline-none placeholder:text-text-muted"
+      />
+      <kbd class="text-xs text-text-muted bg-bg-tertiary px-2 py-1 rounded border border-border-subtle font-mono">ESC</kbd>
+    </div>
+    <div id="search-results" class="max-h-[400px] overflow-y-auto p-2">
+      <div class="px-3 py-6 text-center text-text-muted text-sm">
+        Type to search across all protocols...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ searchIndex, categoryNames }}>
+  document.addEventListener('astro:page-load', () => {
+    const overlay = document.getElementById('search-overlay');
+    const input = document.getElementById('search-input');
+    const results = document.getElementById('search-results');
+    if (!overlay || !input || !results) return;
+
+    let selectedIndex = -1;
+
+    function openSearch() {
+      overlay.style.display = 'flex';
+      input.value = '';
+      input.focus();
+      selectedIndex = -1;
+      results.innerHTML = '<div class="px-3 py-6 text-center text-sm" style="color: var(--color-text-muted)">Type to search across all protocols...</div>';
+    }
+
+    function closeSearch() {
+      overlay.style.display = 'none';
+      input.value = '';
+    }
+
+    function navigateTo(url) {
+      closeSearch();
+      window.location.href = url;
+    }
+
+    function search(query) {
+      if (!query.trim()) {
+        results.innerHTML = '<div class="px-3 py-6 text-center text-sm" style="color: var(--color-text-muted)">Type to search across all protocols...</div>';
+        selectedIndex = -1;
+        return;
+      }
+
+      const q = query.toLowerCase();
+      const scored = searchIndex
+        .map(p => {
+          const name = p.name.toLowerCase();
+          let score = 0;
+          if (name === q) score = 100;
+          else if (name.startsWith(q)) score = 80;
+          else if (name.includes(q)) score = 60;
+          else if (p.category.includes(q)) score = 30;
+          else if (p.chains.some(c => c.toLowerCase().includes(q))) score = 20;
+          else score = 0;
+          return { ...p, score };
+        })
+        .filter(p => p.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+      if (scored.length === 0) {
+        results.innerHTML = '<div class="px-3 py-6 text-center text-sm" style="color: var(--color-text-muted)">No protocols found</div>';
+        selectedIndex = -1;
+        return;
+      }
+
+      const stageColors = { 0: 'var(--color-stage-0)', 1: 'var(--color-stage-1)', 2: 'var(--color-stage-2)' };
+      const stageBgs = { 0: 'var(--color-stage-0-bg)', 1: 'var(--color-stage-1-bg)', 2: 'var(--color-stage-2-bg)' };
+
+      results.innerHTML = scored.map((p, i) => `
+        <button
+          class="search-result w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors duration-100 ${i === 0 ? 'selected' : ''}"
+          style="background: ${i === 0 ? 'var(--color-bg-hover)' : 'transparent'}; border: none; cursor: pointer; color: var(--color-text-primary);"
+          data-url="/${p.category}/${p.slug}"
+          data-index="${i}"
+        >
+          <div class="flex items-center gap-3">
+            <span style="font-weight: 500;">${p.name}</span>
+            <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; border-radius: 9999px; background: var(--color-bg-tertiary); color: var(--color-text-muted);">${categoryNames[p.category] || p.category}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${p.tvl ? `<span style="font-size: 0.75rem; color: var(--color-text-secondary);">${p.tvl}</span>` : ''}
+            <span style="font-size: 0.75rem; font-weight: 600; padding: 0.125rem 0.5rem; border-radius: 9999px; background: ${stageBgs[p.stage]}; color: ${stageColors[p.stage]};">Stage ${p.stage}</span>
+          </div>
+        </button>
+      `).join('');
+
+      selectedIndex = 0;
+
+      results.querySelectorAll('.search-result').forEach(btn => {
+        btn.addEventListener('click', () => navigateTo(btn.dataset.url));
+        btn.addEventListener('mouseenter', () => {
+          updateSelected(parseInt(btn.dataset.index));
+        });
+      });
+    }
+
+    function updateSelected(index) {
+      const items = results.querySelectorAll('.search-result');
+      items.forEach((item, i) => {
+        item.style.background = i === index ? 'var(--color-bg-hover)' : 'transparent';
+      });
+      selectedIndex = index;
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (overlay.style.display === 'flex') closeSearch();
+        else openSearch();
+      }
+      if (e.key === 'Escape' && overlay.style.display === 'flex') {
+        closeSearch();
+      }
+    });
+
+    input.addEventListener('input', (e) => search(e.target.value));
+
+    input.addEventListener('keydown', (e) => {
+      const items = results.querySelectorAll('.search-result');
+      if (!items.length) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        updateSelected(Math.min(selectedIndex + 1, items.length - 1));
+        items[selectedIndex]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        updateSelected(Math.max(selectedIndex - 1, 0));
+        items[selectedIndex]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && selectedIndex >= 0) {
+        e.preventDefault();
+        const url = items[selectedIndex]?.dataset?.url;
+        if (url) navigateTo(url);
+      }
+    });
+
+    // Close on backdrop click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeSearch();
+    });
+
+    // Wire up sidebar search trigger
+    const searchTrigger = document.getElementById('search-trigger');
+    if (searchTrigger) {
+      searchTrigger.addEventListener('click', openSearch);
+    }
+  });
+</script>

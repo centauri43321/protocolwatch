@@ -1,0 +1,47 @@
+---
+import StageBadge from './StageBadge.astro';
+
+interface Props {
+  name: string;
+  stage: number;
+  category: string;
+  slug: string;
+  tvl?: string;
+  chains: string[];
+}
+const { name, stage, category, slug, tvl, chains } = Astro.props;
+---
+
+<a
+  href={`/${category}/${slug}`}
+  class="group block bg-bg-card border border-border-subtle rounded-xl p-6 transition-all duration-200
+         hover:border-accent/30 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.4),0_0_0_1px_rgba(99,102,241,0.15)]"
+>
+  <div class="flex items-start justify-between mb-4">
+    <h2 class="text-base font-semibold text-text-primary group-hover:text-accent-light transition-colors duration-150 leading-snug">
+      {name}
+    </h2>
+    <StageBadge stage={stage} size="sm" />
+  </div>
+
+  <div class="flex items-center gap-3 text-sm text-text-secondary flex-wrap">
+    {tvl && (
+      <div class="flex items-center gap-1.5">
+        <span class="text-text-muted">TVL</span>
+        <span class="font-medium text-text-primary">{tvl}</span>
+      </div>
+    )}
+    <div class="flex items-center gap-1.5 flex-wrap">
+      {chains.slice(0, 3).map(chain => (
+        <span class="px-2 py-0.5 bg-bg-primary/80 rounded-md text-xs capitalize text-text-secondary">
+          {chain}
+        </span>
+      ))}
+      {chains.length > 3 && (
+        <span class="px-2 py-0.5 bg-bg-primary/80 rounded-md text-xs text-text-muted">
+          +{chains.length - 3}
+        </span>
+      )}
+    </div>
+  </div>
+</a>
