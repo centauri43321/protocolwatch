@@ -69,52 +69,6 @@ npm run preview
 
 The dev server will start at `http://localhost:4321`
 
-## Automated TVL Updates
-
-TVL data is kept current by a script that fetches live values from the [DeFiLlama public API](https://defillama.com) (free, no API key required) and writes them directly into each protocol's markdown frontmatter.
-
-### Run manually
-
-```bash
-npm run update-tvl
-```
-
-Sample output:
-
-```
-[2026-02-26T00:56:31.396Z] Fetching TVL data from DeFiLlama...
-  ✓  Updated:   aave-v3            $27.1B
-  ✓  Updated:   lido               $19.4B
-  ·  Unchanged: pendle             $2.3B
-  ...
-Done: 12 updated, 12 unchanged, 0 not found, 0 errors
-```
-
-- `✓ Updated` — frontmatter value was stale and has been rewritten
-- `· Unchanged` — value matches what's already in the file, no write performed
-- `⚠ Not found` — DeFiLlama doesn't have a matching slug (check the map in `scripts/update-tvl.mjs`)
-
-### Automate with cron (recommended)
-
-To refresh TVL daily and rebuild the site automatically, add a cron entry:
-
-```bash
-# Daily at 06:00 — fetch fresh TVL then rebuild
-0 6 * * * cd /path/to/defirisk && npm run update-tvl && npm run build >> logs/tvl.log 2>&1
-```
-
-Or wire the fetch into every build permanently in `package.json`:
-
-```json
-"build": "node scripts/update-tvl.mjs && astro build"
-```
-
-### How it works
-
-1. One `GET` request to `https://api.llama.fi/protocols` returns all tracked protocols
-2. The script matches each DeFiLlama slug to a local markdown file (see `scripts/update-tvl.mjs`)
-3. The `tvl:` field in the frontmatter is replaced in-place — all other content is untouched
-4. The next `npm run build` picks up the updated values
 
 ### Protocol slug map
 
