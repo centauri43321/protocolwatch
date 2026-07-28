@@ -231,13 +231,7 @@ The output will be in the `dist/` directory.
 
 ## Contributing
 
-To add or update protocol assessments:
-
-1. Research the protocol thoroughly
-2. Evaluate across all risk dimensions
-3. Create or update the markdown file
-4. Submit for review with supporting evidence
-5. Include links to contracts, audits, and governance docs
+If you wish to contribute, get in touch either on Github or on X at [centauridoteth](https://x.com/centauridoteth)
 
 ## License
 
