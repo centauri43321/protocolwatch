@@ -227,27 +227,7 @@ Build the static site:
 npm run build
 ```
 
-The output will be in `dist/` directory. Deploy to any static hosting:
-
-- Vercel
-- Netlify
-- Cloudflare Pages
-- GitHub Pages
-- Any static web server
-
-### Vercel Deployment
-
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-### Netlify Deployment
-
-```bash
-npm i -g netlify-cli
-netlify deploy --prod --dir=dist
-```
+The output will be in the `dist/` directory.
 
 ## Contributing
 
@@ -262,6 +242,8 @@ To add or update protocol assessments:
 ## License
 
 No license yet — all rights reserved. The source is published for viewing; it is not yet licensed for reuse or redistribution. A license may be added later.
+
+Website is live at [protocolwatch.xyz](https://protocolwatch.xyz/) and linking to the site from different sources is obviously allowed
 
 ## Acknowledgments
 
