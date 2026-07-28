@@ -4,7 +4,7 @@ category: "bridges"
 stage: 0
 website: "https://layerzero.network"
 chains: ["ethereum", "arbitrum", "optimism", "base", "polygon", "bnb-chain", "avalanche", "solana", "starknet", "linea", "scroll", "zksync", "blast", "mode", "mantle", "fantom"]
-tvl: "$166B"
+tvl: "$6.72B"
 lastUpdated: "2026-05-23"
 risks:
   upgradeability: "immutable"
